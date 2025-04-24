@@ -80,31 +80,26 @@ def creaConjuntos(sudoku):
                 cuadrantes[cuadrante_index].add(elemento)
     return [filas, columnas, cuadrantes]
 
-def actualizaConjuntos(conjuntos, numero, fila, columna):
+def actualizaConjuntos(conjuntos, numero, fila, columna, cuadrante_index):
     """
     Actualiza el sudoku con el nuevo numero
     """
     conjuntos[0][fila].add(numero)
     conjuntos[1][columna].add(numero)
-    cuadrante_index = getCuadrante(fila, columna)
     conjuntos[2][cuadrante_index].add(numero)
     return conjuntos
 
-def borraElemConjunto(conjuntos, numero, fila, columna):
+def borraElemConjunto(conjuntos, numero, fila, columna, cuadrante_index):
     """
     Borra el elemento de los conjuntos que correspondan
     """
     conjuntos[0][fila].remove(numero)
     conjuntos[1][columna].remove(numero)
-    cuadrante_index = getCuadrante(fila, columna)
     conjuntos[2][cuadrante_index].remove(numero)
     return conjuntos
 
 
-def getSolucionSudoku(sudoku, fila=0, columna=0, conjuntos=None):
-    if conjuntos == None:
-        conjuntos = creaConjuntos(sudoku) # Si no se han creado las listas, se crean
-
+def getSolucionSudoku(sudoku, conjuntos, fila=0, columna=0):
     nueva_columna = (columna+1)%9
     if nueva_columna == 0:
         nueva_fila = (fila+1)%9
@@ -115,36 +110,29 @@ def getSolucionSudoku(sudoku, fila=0, columna=0, conjuntos=None):
         if fila == 8 and columna == 8: # Si hay algo y es el ultimo se devuelve tal cual
             return sudoku
         
-        return getSolucionSudoku(sudoku, nueva_fila, nueva_columna, conjuntos) # Si no se continua
+        return getSolucionSudoku(sudoku, conjuntos, nueva_fila, nueva_columna) # Si no se continua
 
+    else:
+        numeros = ["1","2","3","4","5","6","7","8","9"]
 
-    numeros = ["1","2","3","4","5","6","7","8","9"]
+        for numero in numeros:
+            if (compruebaFilas(numero, conjuntos, fila) and compruebaColumnas(numero, conjuntos, columna) and compruebaCuadrantes(numero, conjuntos, fila, columna)): #Es un numero valido
+                sudoku[fila][columna] = numero #Actualizamos el sudoku
+                cuadrante_index = getCuadrante(fila, columna)
+                actualizaConjuntos(conjuntos, numero, fila, columna, cuadrante_index)
 
-    for numero in numeros:
-        fil = compruebaFilas(numero, conjuntos, fila)
-        col = compruebaColumnas(numero, conjuntos, columna)
-        cuad = compruebaCuadrantes(numero, conjuntos, fila, columna)
-        if numero == "8":
-            a = 0
+                if fila == 8 and columna == 8:
+                    return sudoku
+                
+                sol = getSolucionSudoku(sudoku, conjuntos, nueva_fila, nueva_columna)
+                
+                if sol != None:
+                    return sol
+                
+                sudoku[fila][columna] = " "
+                conjuntos = borraElemConjunto(conjuntos, numero, fila, columna, cuadrante_index)
 
-        if (fil and col and cuad): #Es un numero valido
-            sudoku[fila][columna] = numero #Actualizamos el sudoku
-            conjuntos = actualizaConjuntos(conjuntos, numero, fila, columna)
-
-            if columna == 8 and fila == 8:
-                return sudoku
-            
-            
-            
-            sol = getSolucionSudoku(sudoku, nueva_fila, nueva_columna, conjuntos)
-            
-            if sol != None:
-                return sol
-            
-            sudoku[fila][columna] = " "
-            conjuntos = borraElemConjunto(conjuntos, numero, fila, columna)
-
-    return None
+        return None
 
 
 
@@ -183,7 +171,8 @@ def main():
     sudoku = getListaSudoku(ruta)
     printSudoku(sudoku)
 
-    sudoku_resuelto = getSolucionSudoku(sudoku)
+    conjuntos = creaConjuntos(sudoku)
+    sudoku_resuelto = getSolucionSudoku(sudoku,conjuntos)
     printSudoku(sudoku_resuelto)
 
 if __name__ == "__main__":
