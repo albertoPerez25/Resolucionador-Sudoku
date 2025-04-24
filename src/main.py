@@ -26,7 +26,7 @@ def getListaSudoku(ruta):
     sudoku = sudoku.split("\n")
     sudoku = [list(x) for x in sudoku if len(list(x)) == 9]
     if len(sudoku) != 9:
-        print("El sudoku dado no tiene el formato adecuado (9x9)")
+        print("ERROR: El sudoku dado no tiene el formato adecuado (9x9)")
         sys.exit(2)
     return sudoku
 
@@ -46,11 +46,16 @@ def printSudoku(sudoku):
                 print("  |  ", end="")
             else:
                 print("  .  ", end="")
+        if n_elemento != 9:
+            print("ERROR: La fila no tiene 9 elementos")
+            return 1
         print("\n")
         n_fila += 1
         if n_fila % 3 == 0:
             print("----------------------------------------------------")
-
+    if n_fila != 9:
+        print("ERROR: El sudoku no tiene 9 filas")
+        return 2
 
 def main():
     print("\n### Resolvedor de sudoku ###\n")
