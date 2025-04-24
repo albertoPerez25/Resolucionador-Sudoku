@@ -58,9 +58,9 @@ def compruebaCuadrantes(numero, conjuntos, fila, columna):
     """
     Devuelve true si el numero no existe en el cuadrante dado
     """
-    cuadrante = getCuadrante(fila, columna)
+    cuadrante_index = getCuadrante(fila, columna)
 
-    return numero not in conjuntos[2][cuadrante]
+    return numero not in conjuntos[2][cuadrante_index]
 
 def creaConjuntos(sudoku):
     """
