@@ -1,5 +1,5 @@
 # Alberto Pérez Álvarez
-# 
+# Diego García Díaz
 import sys
 
 def getRuta():
@@ -30,11 +30,129 @@ def getListaSudoku(ruta):
         sys.exit(2)
     return sudoku
 
-def getSolucionSudoku():
-    pass
-# TODO: Hacer todas las funciones necesarias
+def compruebaFilas(numero, conjuntos, fila):
+    """
+    Devuelve true si el numero no existe en la fila dada
+    """
+    return numero not in conjuntos[0][fila]
+
+def compruebaColumnas(numero, conjuntos, columna):
+    """
+    Devuelve true si el numero no existe en la columna dada
+    """
+    return numero not in conjuntos[1][columna]
+
+def getCuadrante(fila, columna):
+    """
+    Devuelve el cuadrante de 0 a 8 en el que se esta.
+    Las posiciones [0][0] a [0][2], [1][0] a [1][2] y [2][0] a [2][2] son del primer cuadrante
+    Etc...
+    """
+    # Si el sudoku estuviese dividido por cuadrantes, seria un 3x3
+    fila_cuadrante = fila // 3
+    columna_cuadrante = columna // 3
+
+    return fila_cuadrante * 3 + columna_cuadrante 
+
+def compruebaCuadrantes(numero, conjuntos, fila, columna):
+    """
+    Devuelve true si el numero no existe en el cuadrante dado
+    """
+    cuadrante = getCuadrante(fila, columna)
+
+    return numero not in conjuntos[2][cuadrante]
+
+def creaConjuntos(sudoku):
+    """
+    Recorre el sudoku, devolviendo una lista con 3 listas, dentro de las cuales hay 9 sets.
+    Correspondiendose con las filas, columnas y cuadrantes.
+    """
+    filas = [set() for _ in range(9)]
+    columnas = [set() for _ in range(9)]
+    cuadrantes = [set() for _ in range(9)]
+
+    for fila_index, fila in enumerate(sudoku):
+        for columna_index, elemento in enumerate(fila):
+            if elemento != " ":
+                filas[fila_index].add(elemento)
+                columnas[columna_index].add(elemento)
+                cuadrante_index = getCuadrante(fila_index, columna_index)
+                cuadrantes[cuadrante_index].add(elemento)
+    return [filas, columnas, cuadrantes]
+
+def actualizaConjuntos(conjuntos, numero, fila, columna):
+    """
+    Actualiza el sudoku con el nuevo numero
+    """
+    conjuntos[0][fila].add(numero)
+    conjuntos[1][columna].add(numero)
+    cuadrante_index = getCuadrante(fila, columna)
+    conjuntos[2][cuadrante_index].add(numero)
+    return conjuntos
+
+def borraElemConjunto(conjuntos, numero, fila, columna):
+    """
+    Borra el elemento de los conjuntos que correspondan
+    """
+    conjuntos[0][fila].remove(numero)
+    conjuntos[1][columna].remove(numero)
+    cuadrante_index = getCuadrante(fila, columna)
+    conjuntos[2][cuadrante_index].remove(numero)
+    return conjuntos
+
+
+def getSolucionSudoku(sudoku, fila=0, columna=0, conjuntos=None):
+    if conjuntos == None:
+        conjuntos = creaConjuntos(sudoku) # Si no se han creado las listas, se crean
+
+    nueva_columna = (columna+1)%9
+    if nueva_columna == 0:
+        nueva_fila = (fila+1)%9
+    else:
+        nueva_fila = fila
+    
+    if sudoku[fila][columna] != " ": # Comprobamos que no hay nada donde queremos
+        if fila == 8 and columna == 8: # Si hay algo y es el ultimo se devuelve tal cual
+            return sudoku
+        
+        return getSolucionSudoku(sudoku, nueva_fila, nueva_columna, conjuntos) # Si no se continua
+
+
+    numeros = ["1","2","3","4","5","6","7","8","9"]
+
+    for numero in numeros:
+        fil = compruebaFilas(numero, conjuntos, fila)
+        col = compruebaColumnas(numero, conjuntos, columna)
+        cuad = compruebaCuadrantes(numero, conjuntos, fila, columna)
+        if numero == "8":
+            a = 0
+
+        if (fil and col and cuad): #Es un numero valido
+            sudoku[fila][columna] = numero #Actualizamos el sudoku
+            conjuntos = actualizaConjuntos(conjuntos, numero, fila, columna)
+
+            if columna == 8 and fila == 8:
+                return sudoku
+            
+            
+            
+            sol = getSolucionSudoku(sudoku, nueva_fila, nueva_columna, conjuntos)
+            
+            if sol != None:
+                return sol
+            
+            sudoku[fila][columna] = " "
+            conjuntos = borraElemConjunto(conjuntos, numero, fila, columna)
+
+    return None
+
+
+
 
 def printSudoku(sudoku):
+    if sudoku == None:
+        print("\nERROR: No se ha podido resolver el sudoku o No tiene solución")
+        return 3
     print("\n----------------------------------------------------")
     n_fila = 0
     for fila in sudoku:
@@ -59,11 +177,14 @@ def printSudoku(sudoku):
 
 def main():
     print("\n### Resolvedor de sudoku ###\n")
-    print("Hecho por:\n -Alberto Pérez Álvarez\n -\n")
+    print("Hecho por:\n -Alberto Pérez Álvarez\n -Diego García Díaz\n")
 
     ruta = getRuta()
     sudoku = getListaSudoku(ruta)
-
     printSudoku(sudoku)
 
-main()
+    sudoku_resuelto = getSolucionSudoku(sudoku)
+    printSudoku(sudoku_resuelto)
+
+if __name__ == "__main__":
+    main()
