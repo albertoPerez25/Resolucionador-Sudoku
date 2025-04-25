@@ -54,12 +54,11 @@ def getCuadrante(fila, columna):
 
     return fila_cuadrante * 3 + columna_cuadrante 
 
-def compruebaCuadrantes(numero, conjuntos, fila, columna):
+def compruebaCuadrantes(numero, conjuntos, fila, columna, cuadrante_index):
     """
     Devuelve true si el numero no existe en el cuadrante dado
     """
-    cuadrante_index = getCuadrante(fila, columna)
-
+    
     return numero not in conjuntos[2][cuadrante_index]
 
 def creaConjuntos(sudoku):
@@ -116,26 +115,24 @@ def getSolucionSudoku(sudoku, conjuntos, fila=0, columna=0):
         numeros = ["1","2","3","4","5","6","7","8","9"]
 
         for numero in numeros:
-            if (compruebaFilas(numero, conjuntos, fila) and compruebaColumnas(numero, conjuntos, columna) and compruebaCuadrantes(numero, conjuntos, fila, columna)): #Es un numero valido
-                sudoku[fila][columna] = numero #Actualizamos el sudoku
+            if (compruebaFilas(numero, conjuntos, fila) and compruebaColumnas(numero, conjuntos, columna)):
                 cuadrante_index = getCuadrante(fila, columna)
-                actualizaConjuntos(conjuntos, numero, fila, columna, cuadrante_index)
+                if compruebaCuadrantes(numero, conjuntos, fila, columna, cuadrante_index): #Es un numero valido
+                    sudoku[fila][columna] = numero #Actualizamos el sudoku
+                    actualizaConjuntos(conjuntos, numero, fila, columna, cuadrante_index)
 
-                if fila == 8 and columna == 8:
-                    return sudoku
-                
-                sol = getSolucionSudoku(sudoku, conjuntos, nueva_fila, nueva_columna)
-                
-                if sol != None:
-                    return sol
-                
-                sudoku[fila][columna] = " "
-                conjuntos = borraElemConjunto(conjuntos, numero, fila, columna, cuadrante_index)
+                    if fila == 8 and columna == 8:
+                        return sudoku
+                    
+                    sol = getSolucionSudoku(sudoku, conjuntos, nueva_fila, nueva_columna)
+                    
+                    if sol != None:
+                        return sol
+                    
+                    sudoku[fila][columna] = " "
+                    conjuntos = borraElemConjunto(conjuntos, numero, fila, columna, cuadrante_index)
 
         return None
-
-
-
 
 def printSudoku(sudoku):
     if sudoku == None:
